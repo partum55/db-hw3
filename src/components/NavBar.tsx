@@ -10,6 +10,10 @@ const NAV_ITEMS = [
   { href: '/orders/cancel', label: 'Cancel Order' },
   { href: '/specimens/status', label: 'Specimen Status' },
   { href: '/patients/delete', label: 'Delete Patient' },
+  { href: '/reports/lab-report', label: 'Lab Report' },
+  { href: '/reports/patient-history', label: 'Patient History' },
+  { href: '/reports/abnormal', label: 'Abnormal Results' },
+  { href: '/reports/workload', label: 'Staff Workload' },
 ];
 
 export default function NavBar() {
