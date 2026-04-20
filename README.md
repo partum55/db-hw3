@@ -33,7 +33,7 @@ The FK cascade chain runs PATIENT -> TEST_ORDER -> SPECIMEN -> LAB_REPORT -> RES
 
 - Node.js 20+
 - MySQL 8.0 running locally
-- Database `medical_test_v07` created and populated (see HW3 report Step 6)
+- Database `medical_test_07` created and populated (see HW3 report Step 6)
 
 ## Setup
 
@@ -58,7 +58,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password
-DB_NAME=medical_test_v07
+DB_NAME=medical_test_07
 ```
 
 ### Run in development
