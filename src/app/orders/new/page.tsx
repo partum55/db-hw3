@@ -27,7 +27,12 @@ export default function OrderNewPage() {
 
   const [form, setForm]       = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<{ order_id: number } | null>(null);
+  interface OrderRow {
+    order_id: number; patient_id: number; first_name: string; last_name: string;
+    staff_id: number; physician_name: string; test_name: string; test_code: string;
+    order_date: string; priority: string; status: string; notes: string | null;
+  }
+  const [success, setSuccess] = useState<{ order_id: number; order?: OrderRow } | null>(null);
   const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
@@ -99,11 +104,19 @@ export default function OrderNewPage() {
 
       {success && (
         <div className="alert-success p-4 mb-6">
-          <p className="field-label mb-1">Order Created</p>
-          <p className="mono text-lg font-bold">ORDER_ID = {success.order_id}</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--accent-green)', opacity: 0.8 }}>
-            Status set to ORDERED · LAST_INSERT_ID() = {success.order_id}
-          </p>
+          <p className="field-label mb-1">Order Created — Inserted Row</p>
+          <p className="mono text-lg font-bold mb-2">ORDER_ID = {success.order_id}</p>
+          {success.order && (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mono" style={{ color: 'var(--accent-green)' }}>
+              <span>patient: [{success.order.patient_id}] {success.order.first_name} {success.order.last_name}</span>
+              <span>physician: {success.order.physician_name}</span>
+              <span>test: [{success.order.test_code}] {success.order.test_name}</span>
+              <span>order_date: {success.order.order_date?.slice(0,10)}</span>
+              <span>priority: {success.order.priority}</span>
+              <span>status: {success.order.status}</span>
+              {success.order.notes && <span className="col-span-2">notes: {success.order.notes}</span>}
+            </div>
+          )}
         </div>
       )}
 

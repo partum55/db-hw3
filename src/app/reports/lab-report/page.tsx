@@ -148,6 +148,24 @@ export default function LabReportPage() {
 
       {report && (
         <>
+          {report.header.is_amended ? (
+            <div
+              className="mb-4 p-4 flex items-center gap-3"
+              style={{
+                background: 'rgba(255,69,96,0.12)',
+                border: '2px solid rgba(255,69,96,0.6)',
+                color: 'var(--accent-red)',
+              }}
+            >
+              <span className="mono font-bold text-base tracking-wider">⚠ AMENDED REPORT</span>
+              {report.header.amendment_note && (
+                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                  — {report.header.amendment_note}
+                </span>
+              )}
+            </div>
+          ) : null}
+
           <div className="card p-5 mb-6">
             <p className="section-header field-label mb-4">Report Header</p>
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -177,31 +195,11 @@ export default function LabReportPage() {
                 <p className="field-label mb-1">Overall Status</p>
                 <StatusBadge status={report.header.overall_status} />
               </div>
-              {report.header.is_amended ? (
-                <div className="flex items-start">
-                  <span
-                    className="px-2 py-0.5 text-xs mono font-bold mt-5"
-                    style={{
-                      background: 'rgba(255,179,0,0.12)',
-                      color: '#ffb300',
-                      border: '1px solid rgba(255,179,0,0.3)',
-                    }}
-                  >
-                    AMENDED
-                  </span>
-                </div>
-              ) : null}
             </div>
             {report.header.comments && (
               <div className="mb-3">
                 <p className="field-label mb-1">Comments</p>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{report.header.comments}</p>
-              </div>
-            )}
-            {report.header.is_amended && report.header.amendment_note && (
-              <div className="alert-warning p-3">
-                <p className="field-label mb-1">Amendment Note</p>
-                <p className="text-sm">{report.header.amendment_note}</p>
               </div>
             )}
           </div>

@@ -11,12 +11,18 @@ interface PatientOption {
 interface PreviewData {
   patient: PatientOption;
   order_count: number;
+  specimen_count: number;
+  report_count: number;
+  result_item_count: number;
 }
 
 interface DeleteResult {
   deleted_patient_id: number;
   patient: PatientOption;
   cascaded_orders: number;
+  cascaded_specimens: number;
+  cascaded_reports: number;
+  cascaded_result_items: number;
 }
 
 export default function PatientDeletePage() {
@@ -112,8 +118,11 @@ export default function PatientDeletePage() {
             [{success.deleted_patient_id}] {success.patient.first_name} {success.patient.last_name}
           </p>
           <div className="mt-3 text-xs mono" style={{ color: 'var(--text-secondary)' }}>
-            <p>Cascaded deletions:</p>
-            <p>· TEST_ORDER rows: {success.cascaded_orders} (+ cascades to SPECIMEN → LAB_REPORT → RESULT_ITEM)</p>
+            <p>Cascaded deletions (ON DELETE CASCADE):</p>
+            <p>· TEST_ORDER rows:  {success.cascaded_orders}</p>
+            <p>· SPECIMEN rows:    {success.cascaded_specimens}</p>
+            <p>· LAB_REPORT rows:  {success.cascaded_reports}</p>
+            <p>· RESULT_ITEM rows: {success.cascaded_result_items}</p>
           </div>
         </div>
       )}
@@ -163,21 +172,28 @@ export default function PatientDeletePage() {
                 Deletion Preview
               </p>
               <div className="grid grid-cols-2 gap-3 text-xs mt-1">
-                <div>
+                <div className="col-span-2">
                   <p className="field-label mb-1">Patient</p>
                   <p className="mono">
                     [{preview.patient.patient_id}] {preview.patient.first_name} {preview.patient.last_name}
                   </p>
                 </div>
-                <div>
-                  <p className="field-label mb-1">Test Orders</p>
-                  <p
-                    className="mono font-bold text-base"
-                    style={{ color: preview.order_count > 0 ? 'var(--accent-red)' : 'var(--text-secondary)' }}
-                  >
-                    {preview.order_count}
-                  </p>
-                </div>
+                {([
+                  ['TEST_ORDER rows',  preview.order_count],
+                  ['SPECIMEN rows',    preview.specimen_count],
+                  ['LAB_REPORT rows',  preview.report_count],
+                  ['RESULT_ITEM rows', preview.result_item_count],
+                ] as [string, number][]).map(([label, count]) => (
+                  <div key={label}>
+                    <p className="field-label mb-1">{label}</p>
+                    <p
+                      className="mono font-bold text-base"
+                      style={{ color: count > 0 ? 'var(--accent-red)' : 'var(--text-secondary)' }}
+                    >
+                      {count}
+                    </p>
+                  </div>
+                ))}
               </div>
               <div
                 className="mt-2 p-2 text-xs mono"

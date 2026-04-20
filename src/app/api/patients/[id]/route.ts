@@ -21,11 +21,19 @@ export async function DELETE(
       return Response.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    const [countRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT COUNT(*) AS cnt FROM TEST_ORDER WHERE patient_id = ?',
+    const [[counts]] = await pool.execute<RowDataPacket[]>(
+      `SELECT
+         COUNT(DISTINCT o.order_id)                          AS order_count,
+         COUNT(DISTINCT s.specimen_id)                       AS specimen_count,
+         COUNT(DISTINCT lr.report_id)                        AS report_count,
+         COUNT(DISTINCT ri.report_id, ri.item_seq_no)        AS result_item_count
+       FROM TEST_ORDER o
+       LEFT JOIN SPECIMEN     s  ON s.order_id    = o.order_id
+       LEFT JOIN LAB_REPORT   lr ON lr.specimen_id = s.specimen_id
+       LEFT JOIN RESULT_ITEM  ri ON ri.report_id  = lr.report_id
+       WHERE o.patient_id = ?`,
       [patientId]
     );
-    const orderCount = Number((countRows as any)[0].cnt);
 
     const [result] = await pool.execute<ResultSetHeader>(
       'DELETE FROM PATIENT WHERE patient_id = ?',
@@ -39,7 +47,10 @@ export async function DELETE(
     return Response.json({
       deleted_patient_id: patientId,
       patient: rows[0],
-      cascaded_orders: orderCount,
+      cascaded_orders:      Number(counts.order_count),
+      cascaded_specimens:   Number(counts.specimen_count),
+      cascaded_reports:     Number(counts.report_count),
+      cascaded_result_items: Number(counts.result_item_count),
     });
   } catch (err: any) {
     return Response.json({ error: err.message ?? 'Database error' }, { status: 500 });
@@ -66,15 +77,26 @@ export async function GET(
       return Response.json({ error: 'Patient not found' }, { status: 404 });
     }
 
-    const [countRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT COUNT(*) AS cnt FROM TEST_ORDER WHERE patient_id = ?',
+    const [[counts]] = await pool.execute<RowDataPacket[]>(
+      `SELECT
+         COUNT(DISTINCT o.order_id)                          AS order_count,
+         COUNT(DISTINCT s.specimen_id)                       AS specimen_count,
+         COUNT(DISTINCT lr.report_id)                        AS report_count,
+         COUNT(DISTINCT ri.report_id, ri.item_seq_no)        AS result_item_count
+       FROM TEST_ORDER o
+       LEFT JOIN SPECIMEN     s  ON s.order_id    = o.order_id
+       LEFT JOIN LAB_REPORT   lr ON lr.specimen_id = s.specimen_id
+       LEFT JOIN RESULT_ITEM  ri ON ri.report_id  = lr.report_id
+       WHERE o.patient_id = ?`,
       [patientId]
     );
-    const orderCount = Number((countRows as any)[0].cnt);
 
     return Response.json({
       patient: patientRows[0],
-      order_count: orderCount,
+      order_count:       Number(counts.order_count),
+      specimen_count:    Number(counts.specimen_count),
+      report_count:      Number(counts.report_count),
+      result_item_count: Number(counts.result_item_count),
     });
   } catch (err: any) {
     return Response.json({ error: err.message ?? 'Database error' }, { status: 500 });

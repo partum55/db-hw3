@@ -1,5 +1,5 @@
 import pool from '@/lib/db';
-import { ResultSetHeader } from 'mysql2';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 
 export async function POST(request: Request) {
   let body: any;
@@ -35,7 +35,12 @@ export async function POST(request: Request) {
         address?.trim() || null,
       ]
     );
-    return Response.json({ patient_id: result.insertId }, { status: 201 });
+    const patientId = result.insertId;
+    const [[newPatient]] = await pool.execute<RowDataPacket[]>(
+      'SELECT patient_id, first_name, last_name, date_of_birth, gender, phone, email, address FROM PATIENT WHERE patient_id = ?',
+      [patientId]
+    );
+    return Response.json({ patient_id: patientId, patient: newPatient }, { status: 201 });
   } catch (err: any) {
     return Response.json({ error: err.message ?? 'Database error' }, { status: 500 });
   }

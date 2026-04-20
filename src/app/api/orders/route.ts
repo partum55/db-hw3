@@ -29,9 +29,9 @@ export async function POST(request: Request) {
     if (!patientRow) return Response.json({ error: 'Patient not found' }, { status: 404 });
 
     const [[staffRow]] = await pool.execute<RowDataPacket[]>(
-      "SELECT staff_id FROM MEDICAL_STAFF WHERE staff_id = ? AND role = 'Doctor'", [staff_id]
+      "SELECT staff_id FROM MEDICAL_STAFF WHERE staff_id = ? AND role = 'Ordering Physician'", [staff_id]
     );
-    if (!staffRow) return Response.json({ error: 'Doctor not found' }, { status: 404 });
+    if (!staffRow) return Response.json({ error: 'Ordering Physician not found' }, { status: 404 });
 
     const [[testRow]] = await pool.execute<RowDataPacket[]>(
       'SELECT test_def_id FROM TEST_DEFINITION WHERE test_def_id = ?', [test_def_id]
@@ -44,7 +44,21 @@ export async function POST(request: Request) {
       [patient_id, staff_id, test_def_id, order_date, priority, notes?.trim() || null]
     );
 
-    return Response.json({ order_id: result.insertId }, { status: 201 });
+    const orderId = result.insertId;
+    const [[newOrder]] = await pool.execute<RowDataPacket[]>(
+      `SELECT o.order_id, o.patient_id, p.first_name, p.last_name,
+              o.staff_id, CONCAT(ms.first_name,' ',ms.last_name) AS physician_name,
+              td.test_name, td.test_code,
+              o.order_date, o.priority, o.status, o.notes
+       FROM TEST_ORDER o
+       JOIN PATIENT p ON p.patient_id = o.patient_id
+       JOIN MEDICAL_STAFF ms ON ms.staff_id = o.staff_id
+       JOIN TEST_DEFINITION td ON td.test_def_id = o.test_def_id
+       WHERE o.order_id = ?`,
+      [orderId]
+    );
+
+    return Response.json({ order_id: orderId, order: newOrder }, { status: 201 });
   } catch (err: any) {
     return Response.json({ error: err.message ?? 'Database error' }, { status: 500 });
   }

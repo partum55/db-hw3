@@ -20,7 +20,12 @@ const INITIAL: FormData = {
 export default function PatientNewPage() {
   const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<{ patient_id: number } | null>(null);
+  interface PatientRow {
+    patient_id: number; first_name: string; last_name: string;
+    date_of_birth: string; gender: string;
+    phone: string | null; email: string | null; address: string | null;
+  }
+  const [success, setSuccess] = useState<{ patient_id: number; patient: PatientRow } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function set(field: keyof FormData) {
@@ -72,13 +77,19 @@ export default function PatientNewPage() {
 
       {success && (
         <div className="alert-success p-4 mb-6">
-          <p className="field-label mb-1">Registration Successful</p>
-          <p className="mono text-lg font-bold">
-            PATIENT_ID = {success.patient_id}
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--accent-green)', opacity: 0.8 }}>
-            LAST_INSERT_ID() returned {success.patient_id}
-          </p>
+          <p className="field-label mb-1">Registration Successful — Inserted Row</p>
+          <p className="mono text-lg font-bold mb-2">PATIENT_ID = {success.patient_id}</p>
+          {success.patient && (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mono" style={{ color: 'var(--accent-green)' }}>
+              <span>first_name: {success.patient.first_name}</span>
+              <span>last_name: {success.patient.last_name}</span>
+              <span>date_of_birth: {success.patient.date_of_birth?.slice(0,10)}</span>
+              <span>gender: {success.patient.gender}</span>
+              <span>phone: {success.patient.phone ?? 'NULL'}</span>
+              <span>email: {success.patient.email ?? 'NULL'}</span>
+              {success.patient.address && <span className="col-span-2">address: {success.patient.address}</span>}
+            </div>
+          )}
         </div>
       )}
 

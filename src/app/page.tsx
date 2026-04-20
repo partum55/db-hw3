@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 interface TableCount {
   tbl: string;
-  cnt: number;
+  row_count: number;
 }
 
 const TABLE_META: Record<string, { label: string; desc: string }> = {
@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   try {
     const [rows] = await pool.query<any[]>(`
-      SELECT 'PATIENT' AS tbl, COUNT(*) AS cnt FROM PATIENT
+      SELECT 'PATIENT'         AS tbl, COUNT(*) AS row_count FROM PATIENT
       UNION ALL SELECT 'MEDICAL_STAFF',   COUNT(*) FROM MEDICAL_STAFF
       UNION ALL SELECT 'TEST_DEFINITION', COUNT(*) FROM TEST_DEFINITION
       UNION ALL SELECT 'TEST_ORDER',      COUNT(*) FROM TEST_ORDER
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       UNION ALL SELECT 'LAB_REPORT',      COUNT(*) FROM LAB_REPORT
       UNION ALL SELECT 'RESULT_ITEM',     COUNT(*) FROM RESULT_ITEM
     `);
-    counts = rows.map((r: any) => ({ tbl: r.tbl, cnt: Number(r.cnt) }));
+    counts = rows.map((r: any) => ({ tbl: r.tbl, row_count: Number(r.row_count) }));
   } catch (err: any) {
     dbError = err.message ?? 'Unknown database error';
   }
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
           Live row counts for all 7 tables in{' '}
-          <span className="mono" style={{ color: 'var(--accent-cyan)' }}>medical_test_v07</span>
+          <span className="mono" style={{ color: 'var(--accent-cyan)' }}>medical_test_07</span>
         </p>
       </div>
 
@@ -60,23 +60,21 @@ export default async function DashboardPage() {
           <thead>
             <tr>
               <th className="text-left">Table</th>
-              <th className="text-left">Description</th>
               <th className="text-right">Row Count</th>
             </tr>
           </thead>
           <tbody>
-            {counts.map(({ tbl, cnt }) => {
+            {counts.map(({ tbl, row_count }) => {
               const meta = TABLE_META[tbl] ?? { label: tbl, desc: '' };
               return (
                 <tr key={tbl}>
                   <td>
                     <span className="mono text-xs" style={{ color: 'var(--accent-cyan)' }}>{tbl}</span>
-                    <span className="ml-2 text-xs" style={{ color: 'var(--text-primary)' }}>{meta.label}</span>
+                    <span className="ml-2 text-xs" style={{ color: 'var(--text-secondary)' }}>{meta.label}</span>
                   </td>
-                  <td className="text-xs" style={{ color: 'var(--text-muted)' }}>{meta.desc}</td>
                   <td className="text-right">
                     <span className="mono font-bold text-lg" style={{ color: 'var(--accent-cyan)' }}>
-                      {cnt.toLocaleString()}
+                      {row_count.toLocaleString()}
                     </span>
                   </td>
                 </tr>
